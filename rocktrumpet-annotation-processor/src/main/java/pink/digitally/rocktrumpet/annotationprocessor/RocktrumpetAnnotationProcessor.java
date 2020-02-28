@@ -1,6 +1,7 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
 import com.google.auto.service.AutoService;
+import pink.digitally.rocktrumpet.annotationprocessor.builders.PageTitleBuilder;
 import pink.digitally.rocktrumpet.annotations.PageTitle;
 
 import javax.annotation.processing.*;
@@ -37,8 +38,7 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
             Name simpleName = pageTitleElement.getSimpleName();
             PageTitle annotation = pageTitleElement.getAnnotation(PageTitle.class);
             //TODO Move the writhing to another class.
-            StringBuilder stringBuilder = new StringBuilder().append("# ").append(annotation.value()).append("\n");
-
+            PageTitleBuilder pageTitleBuilder = new PageTitleBuilder(annotation);
             try {
                 File file = new File(documentDirectory);
                 if(!file.exists()){
@@ -46,7 +46,7 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
                     file.mkdirs();
                 }
                 Files.write(new File(documentDirectory, simpleName.toString() + ".md").toPath(),
-                        stringBuilder.toString().getBytes(StandardCharsets.UTF_8));
+                        pageTitleBuilder.toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
                 e.printStackTrace();
             }

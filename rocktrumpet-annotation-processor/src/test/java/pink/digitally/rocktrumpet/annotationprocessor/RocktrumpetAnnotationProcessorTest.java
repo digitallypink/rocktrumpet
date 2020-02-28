@@ -86,6 +86,33 @@ class RocktrumpetAnnotationProcessorTest {
         assertFileContains("HelloWorld.md", "Just The Title");
     }
 
+    @Test
+    public void pageTitleWithAllOptions(){
+        JavaFileObject fileObject = JavaFileObjects.forSourceString(
+                "pink.digitally.rocktrumpet.annotationprocessor.FooBar",
+                "package pink.digitally.rocktrumpet.annotationprocessor;\n" +
+                        "\n" +
+                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
+                        "\n" +
+                        "@PageTitle(value = \"Foo Bar\", documentNumber = \"1\", subHeading = \"A story of foo and bar\",\n" +
+                        "summary = @Summary(\"One fine day in the month of May, Foo met Bar at a Bar and interesting things began to unfold.\"))\n" +
+                        "public class FooBar {\n" +
+                        "}");
+
+        assert_()
+                .about(javaSource())
+                .that(fileObject)
+                .processedWith(underTest)
+                .compilesWithoutError();
+
+        assertFileExists("FooBar.md");
+        assertFileContains("FooBar.md",
+                "Foo Bar",
+                "A story of foo and bar",
+                "One fine day in the month of May, Foo met Bar at a Bar and interesting things began to unfold.");
+    }
+
     private void assertFileExists(String fileName) {
         File file = new File(docsFolderPath, fileName);
         assertTrue(String.format("Expected the file '%s' in classpath.", file.toPath()), file.exists());
@@ -96,7 +123,9 @@ class RocktrumpetAnnotationProcessorTest {
         String fileBody = null;
         try {
             fileBody = Files.lines(file.toPath()).collect(Collectors.joining());
-            assertTrue(Stream.of(strings).allMatch(fileBody::contains));
+            for (String string : strings) {
+                assertTrue(String.format("Expected a file body containing '%s'", string), fileBody.contains(string));
+            }
         } catch (IOException e) {
             fail(String.format("%s is missing.", file.toPath()));
         }
