@@ -26,4 +26,10 @@ public @interface PageTitle {
      * @return document number
      */
     String documentNumber();
+
+    /**
+     *
+     * @return Sub Heading
+     */
+    String subHeading() default "";
 }
