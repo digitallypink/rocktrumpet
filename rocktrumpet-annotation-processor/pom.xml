@@ -12,7 +12,7 @@
     <artifactId>rocktrumpet-annotation-processor</artifactId>
 
     <properties>
-        <auto-service.version>1.0-rc2</auto-service.version>
+        <auto-service.version>1.0-rc6</auto-service.version>
     </properties>
 
     <dependencies>
@@ -20,6 +20,14 @@
             <groupId>pink.digitally.rocktrumpet</groupId>
             <artifactId>rocktrumpet-annotations</artifactId>
             <version>${parent.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Used only by GeneratedAnnotationSpecs.
+                 If you use JavaPoet, you can use GeneratedAnnotationSpecs. -->
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+            <version>1.12.1</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -34,21 +42,23 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-surefire-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.olivergondza</groupId>
-            <artifactId>maven-jdk-tools-wrapper</artifactId>
         </dependency>
     </dependencies>
     <build>

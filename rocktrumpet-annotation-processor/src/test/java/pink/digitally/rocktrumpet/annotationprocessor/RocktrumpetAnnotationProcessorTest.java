@@ -1,17 +1,21 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
 import com.google.testing.compile.JavaFileObjects;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.lang.module.ModuleFinder;
+import java.lang.module.ModuleReference;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assert_;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
@@ -22,11 +26,19 @@ import static org.junit.Assert.fail;
 class RocktrumpetAnnotationProcessorTest {
     private String docsFolderPath = "./target/docs";
     private RocktrumpetAnnotationProcessor underTest;
+    private static File jarFile;
 
     @BeforeEach
     public void setUp() {
         underTest = new RocktrumpetAnnotationProcessor();
+
         System.setProperty("docs.path", docsFolderPath);
+    }
+
+    @BeforeAll
+    public static void allTests(){
+        jarFile = new File("/Users/ujuezeoke/projects/digitallypink/rocktrumpet/rocktrumpet-annotations/target/rocktrumpet-annotations-1.0-SNAPSHOT.jar");
+        System.setProperty("com.google.common.truth.disable_stack_trace_cleaning", "true");
     }
 
     @Test
@@ -79,6 +91,8 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withClasspath(Collections.singleton(jarFile))
+                .withCompilerOptions("-verbose")
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -111,6 +125,39 @@ class RocktrumpetAnnotationProcessorTest {
                 "Foo Bar",
                 "A story of foo and bar",
                 "One fine day in the month of May, Foo met Bar at a Bar and interesting things began to unfold.");
+    }
+
+    @Test
+    public void methodDescription(){
+        JavaFileObject fileObject = JavaFileObjects.forSourceString(
+                "pink.digitally.rocktrumpet.annotationprocessor.BartSimpson",
+                "package pink.digitally.rocktrumpet.annotationprocessor;\n" +
+                        "\n" +
+                        "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
+                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        "\n" +
+                        "@PageTitle(documentNumber = \"1\", value = \"Bart Simpson\")\n" +
+                        "public class BartSimpson {\n" +
+                        "\n" +
+                        "    @MethodDescription(pre = \"Bart as we all know enjoys being mischievous.\",\n" +
+                        "    post = \"The above method demonstrates the act of Bart being mischievous.\")\n" +
+                        "    public void performMischief(){\n" +
+                        "        System.out.println(\"Ay Caramba!\");\n" +
+                        "    }\n" +
+                        "}");
+
+        assert_()
+                .about(javaSource())
+                .that(fileObject)
+                .withClasspath(Collections.singleton(jarFile))
+                .processedWith(underTest)
+                .compilesWithoutError();
+        assertFileExists("BartSimpson.md");
+        assertFileContains("BartSimpson.md",
+                "Bart Simpson",
+                "Bart as we all know enjoys being mischievous.",
+                "public void performMischief()","System.out.println(\"Ay Caramba!\");",
+                "The above method demonstrates the act of Bart being mischievous.");
     }
 
     private void assertFileExists(String fileName) {

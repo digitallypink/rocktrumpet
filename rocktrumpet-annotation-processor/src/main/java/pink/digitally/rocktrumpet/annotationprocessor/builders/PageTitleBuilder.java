@@ -5,13 +5,14 @@ import pink.digitally.rocktrumpet.annotations.PageTitle;
 
 public class PageTitleBuilder {
     private final PageTitle pageTitle;
+    private final StringBuilder stringBuilder;
 
-    public PageTitleBuilder(PageTitle pageTitle) {
+    public PageTitleBuilder(PageTitle pageTitle, StringBuilder stringBuilder) {
         this.pageTitle = pageTitle;
+        this.stringBuilder = stringBuilder;
     }
 
-    public String toString(){
-        StringBuilder stringBuilder = new StringBuilder();
+    public void build(){
         stringBuilder.append("# ")
                 .append(pageTitle.value())
                 .append("\n");
@@ -29,7 +30,5 @@ public class PageTitleBuilder {
                     .append(pageTitle.summary().value())
                     .append("\n");
         }
-
-        return stringBuilder.toString();
     }
 }
