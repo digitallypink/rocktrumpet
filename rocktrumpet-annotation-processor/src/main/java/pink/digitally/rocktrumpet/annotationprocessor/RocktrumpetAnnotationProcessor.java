@@ -1,11 +1,11 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
 //import com.google.auto.service.AutoService;
+
 import com.google.auto.service.AutoService;
 import com.sun.source.util.Trees;
 import pink.digitally.rocktrumpet.annotationprocessor.builders.CombinedBuilder;
-import pink.digitally.rocktrumpet.annotationprocessor.builders.MethodsBuilder;
-import pink.digitally.rocktrumpet.annotationprocessor.builders.PageTitleBuilder;
+import pink.digitally.rocktrumpet.annotations.Heading;
 import pink.digitally.rocktrumpet.annotations.MethodDescription;
 import pink.digitally.rocktrumpet.annotations.PageTitle;
 
@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.Set;
 
 @SupportedAnnotationTypes(
@@ -41,7 +40,8 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<? extends Element> pageTitleElements = roundEnv.getElementsAnnotatedWith(PageTitle.class);
-        Set<? extends Element> methods = roundEnv.getElementsAnnotatedWith(MethodDescription.class);
+        Set<? extends Element> methods = roundEnv.getElementsAnnotatedWithAny(Set.of(MethodDescription.class,
+                Heading.class));
         //There can be ONLY one pageTitle per class
         for (Element pageTitleElement : pageTitleElements) {
             Name simpleName = pageTitleElement.getSimpleName();

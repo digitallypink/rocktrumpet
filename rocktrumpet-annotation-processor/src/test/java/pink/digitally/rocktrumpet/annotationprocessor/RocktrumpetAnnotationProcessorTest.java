@@ -90,7 +90,6 @@ class RocktrumpetAnnotationProcessorTest {
                 .about(javaSource())
                 .that(fileObject)
                 .withClasspath(Collections.singleton(jarFile))
-                .withCompilerOptions("-verbose")
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -115,6 +114,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withClasspath(Collections.singleton(jarFile))
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -196,6 +196,78 @@ class RocktrumpetAnnotationProcessorTest {
                 "Below we will demonstrate one of the things that Doof loves to do",
                 "public void trapPerryThePlatypus()", "Only Doofenshmirtz knows how he determines if he has trapped Perry",
                 "aPlatypusIsWearingAHat()");
+    }
+
+    @Test
+    public void multipleMethodsMultipleHeaders(){
+        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", ROCKTRUMPET_ANNOTATIONPROCESSOR+
+                "\n" +
+                "import pink.digitally.rocktrumpet.annotations.Heading;\n" +
+                "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
+                ANNOTATIONS_PAGE_TITLE +
+                "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
+                "import pink.digitally.rocktrumpet.annotations.types.HeadingLevel;\n" +
+                "\n" +
+                "@PageTitle(value = \"Programing Conditional Concepts\", documentNumber = \"1\",\n" +
+                "        summary = @Summary(\"The document is going to focus on conditional behaviour\"))\n" +
+                "public class ProgramingConditionalConcepts {\n" +
+                "\n" +
+                "    @Heading(level = HeadingLevel.H2, value = \"If Statement\")\n" +
+                "    @MethodDescription(pre = \"A standard if statement would perform an additional task ONLY when the condition in the if\" +\n" +
+                "            \" block has been satisfied.\",\n" +
+                "            post = \"When the above has been run, \\\"Do something that is unique to number five\\\" \" +\n" +
+                "                    \"will be printed ONLY when the number passed is 5\")\n" +
+                "    public void ifStatement(int number) {\n" +
+                "        if (5 == number) {\n" +
+                "            System.out.println(\"Do something that is unique to number five\");\n" +
+                "        }\n" +
+                "        System.out.println(\"Something evey number does.\");\n" +
+                "    }\n" +
+                "\n" +
+                "    @MethodDescription(pre = \"If-Else statements are used to pick between a number of conditions.\",\n" +
+                "            post = \"In the example above, 'number % 5 == 0' is given the highest priority. \" +\n" +
+                "                    \"For example if the number is 10 the result will include \\\"Divisible by 5\\\" and not \" +\n" +
+                "                    \"\\\"Divisible by 2 and not divisible by 5\\\"\")\n" +
+                "    public void ifElseStatements(int number) {\n" +
+                "        if (number % 5 == 0) {\n" +
+                "            System.out.println(\"Divisible by 5\");\n" +
+                "        } else if (number % 2 == 0) {\n" +
+                "            System.out.println(\"Divisible by 2 and not divisible by 5\");\n" +
+                "        }\n" +
+                "        System.out.println(\"Something evey number does.\");\n" +
+                "    }\n" +
+                "    \n" +
+                "    @Heading(level = HeadingLevel.H2, value = \"Switch Statements\")\n" +
+                "    @MethodDescription(pre = \"This CAN be considered as a replacement for if-else-if statements.\",\n" +
+                "    post = \"***Disclaimer use this technique with caution.\")\n" +
+                "    public void switchStatement(int number){\n" +
+                "        switch (number){\n" +
+                "            case 5: {\n" +
+                "                System.out.println(\"Number is 5\");\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            case 2:{\n" +
+                "                System.out.println(\"Number is 2\");\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            default:\n" +
+                "                System.out.println(\"Every other number\");    \n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+
+        assert_()
+                .about(javaSource())
+                .that(fileObject)
+                .withClasspath(Collections.singleton(jarFile))
+                .processedWith(underTest)
+                .compilesWithoutError();
+        assertFileExists("ProgramingConditionalConcepts.md");
+        assertFileContains("ProgramingConditionalConcepts.md",
+                "The document is going to focus on conditional behaviour",
+                "## If Statement",
+                "A standard if statement would perform an additional task ONLY", "public void ifStatement(int number)",
+                "## Switch Statements");
     }
 
     private void assertFileExists(String fileName) {

@@ -2,17 +2,21 @@ package pink.digitally.rocktrumpet.annotationprocessor.builders;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.Trees;
+import pink.digitally.rocktrumpet.annotations.Heading;
 import pink.digitally.rocktrumpet.annotations.MethodDescription;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import java.util.Collection;
+import java.util.Optional;
 
 public class MethodsBuilder implements Builder {
+    private static final String CODE_BLOCK = "\n```\n";
     private final Collection<? extends Element> methodDescriptions;
     private final Trees instance;
     private final StringBuilder stringBuilder;
-    public static final String FORMAT = "@MethodDescription[\\s]?\\(.+\\)";
+    private static final String METHOD_DESCRIPTION_ANNOTATION_REGEX = "@MethodDescription[\\s]?\\(.+\\)";
+    private static final String HEADER_ANNOTATION_REGEX = "@Heading[\\s]?\\(.+\\)";
 
     public MethodsBuilder(Collection<? extends Element> methodDescriptions, Trees instance, StringBuilder stringBuilder){
         this.methodDescriptions = methodDescriptions;
@@ -24,13 +28,23 @@ public class MethodsBuilder implements Builder {
     public void build(){
         for (Element methodDescriptionElement : methodDescriptions) {
             final MethodDescription methodDescription = methodDescriptionElement.getAnnotation(MethodDescription.class);
+            final Heading heading = methodDescriptionElement.getAnnotation(Heading.class);
             final String pre = methodDescription.pre();
             final String post = methodDescription.post();
             final MethodTree methodTree = instance.getTree((ExecutableElement) methodDescriptionElement);
-            final String methodBody = methodTree.toString().replaceAll(FORMAT, "").trim();
-            stringBuilder.append("\n").append(pre).append("\n").append("\n```\n")
-                    .append(methodBody).append("\n```\n")
-                    .append(post);
+            final String methodBody = methodTree.toString()
+                    .replaceAll(METHOD_DESCRIPTION_ANNOTATION_REGEX+"|"+HEADER_ANNOTATION_REGEX, "").trim();
+
+            Optional.ofNullable(heading).ifPresent(theHeading -> stringBuilder
+                    .append("\n\n")
+                    .append(theHeading.level().markdown())
+                    .append(theHeading.value())
+                    .append("\n"));
+
+            stringBuilder
+                    .append("\n").append(pre).append("\n").append(CODE_BLOCK)
+                    .append(methodBody).append(CODE_BLOCK)
+                    .append(post).append("\n");
         }
     }
 }
