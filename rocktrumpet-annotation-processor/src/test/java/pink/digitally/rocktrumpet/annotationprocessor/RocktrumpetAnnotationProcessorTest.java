@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,11 +21,12 @@ import static org.junit.Assert.fail;
 
 
 class RocktrumpetAnnotationProcessorTest {
-    public static final String ANNOTATIONS_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
-    public static final String ROCKTRUMPET_ANNOTATIONPROCESSOR = "package pink.digitally.rocktrumpet.annotationprocessor;\n";
+    private static final String JAR_BASE_NAME = "rocktrumpet-annotations";
+    private static final String ANNOTATIONS_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
+    private static final String ROCKTRUMPET_ANNOTATIONPROCESSOR = "package pink.digitally.rocktrumpet.annotationprocessor;\n";
     private String docsFolderPath = "./target/docs";
     private RocktrumpetAnnotationProcessor underTest;
-    private static File jarFile;
+    private static Set<File> jarFile;
 
     @BeforeEach
     public void setUp() {
@@ -35,7 +37,11 @@ class RocktrumpetAnnotationProcessorTest {
 
     @BeforeAll
     public static void allTests() {
-        jarFile = new File("/Users/ujuezeoke/projects/digitallypink/rocktrumpet/rocktrumpet-annotations/target/rocktrumpet-annotations-1.0-SNAPSHOT.jar");
+        final File[] files = new File("../rocktrumpet-annotations/target").listFiles((dir, name) -> name.contains(JAR_BASE_NAME) && name.endsWith(".jar"));
+        if (files == null || files.length == 0) {
+            throw new AssertionError("rocktrumpet-annotations Jar has not been built");
+        }
+        jarFile = Collections.singleton(files[0]);
         System.setProperty("com.google.common.truth.disable_stack_trace_cleaning", "true");
     }
 
@@ -52,6 +58,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .failsToCompile();
     }
@@ -89,7 +96,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(Collections.singleton(jarFile))
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -114,7 +121,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(Collections.singleton(jarFile))
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -147,7 +154,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(Collections.singleton(jarFile))
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("BartSimpson.md");
@@ -162,32 +169,32 @@ class RocktrumpetAnnotationProcessorTest {
     public void multipleMethods() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.Doofenshmirtz",
                 ROCKTRUMPET_ANNOTATIONPROCESSOR +
-                "\n" +
-                "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
-                ANNOTATIONS_PAGE_TITLE +
-                "\n" +
-                "@PageTitle(value = \"I am Dr. Heinz Doofenshmirtz\", documentNumber = \"1\")\n" +
-                "public class Doofenshmirtz {\n" +
-                "    \n" +
-                "    @MethodDescription(pre = \"Below we will demonstrate one of the things that Doof loves to do\")\n" +
-                "    public void trapPerryThePlatypus(){\n" +
-                "        if(aPlatypusIsWearingAHat()){\n" +
-                "            System.out.println(\"You are trapped Perry the Platypus\");\n" +
-                "        } else {\n" +
-                "            System.out.println(\"Where is Perry the Platypus\");\n" +
-                "        }\n" +
-                "    }\n" +
-                "\n" +
-                "    @MethodDescription(pre = \"Only Doofenshmirtz knows how he determines if he has trapped Perry\",\n" +
-                "            post = \"The method above is private.\")\n" +
-                "    private boolean aPlatypusIsWearingAHat() {\n" +
-                "        return true;\n" +
-                "    }\n" +
-                "}");
+                        "\n" +
+                        "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
+                        ANNOTATIONS_PAGE_TITLE +
+                        "\n" +
+                        "@PageTitle(value = \"I am Dr. Heinz Doofenshmirtz\", documentNumber = \"1\")\n" +
+                        "public class Doofenshmirtz {\n" +
+                        "    \n" +
+                        "    @MethodDescription(pre = \"Below we will demonstrate one of the things that Doof loves to do\")\n" +
+                        "    public void trapPerryThePlatypus(){\n" +
+                        "        if(aPlatypusIsWearingAHat()){\n" +
+                        "            System.out.println(\"You are trapped Perry the Platypus\");\n" +
+                        "        } else {\n" +
+                        "            System.out.println(\"Where is Perry the Platypus\");\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    @MethodDescription(pre = \"Only Doofenshmirtz knows how he determines if he has trapped Perry\",\n" +
+                        "            post = \"The method above is private.\")\n" +
+                        "    private boolean aPlatypusIsWearingAHat() {\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}");
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(Collections.singleton(jarFile))
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("Doofenshmirtz.md");
@@ -199,8 +206,8 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void multipleMethodsMultipleHeaders(){
-        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", ROCKTRUMPET_ANNOTATIONPROCESSOR+
+    public void multipleMethodsMultipleHeaders() {
+        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", ROCKTRUMPET_ANNOTATIONPROCESSOR +
                 "\n" +
                 "import pink.digitally.rocktrumpet.annotations.Heading;\n" +
                 "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
@@ -259,7 +266,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(Collections.singleton(jarFile))
+                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("ProgramingConditionalConcepts.md");
