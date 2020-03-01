@@ -8,14 +8,10 @@ import org.junit.jupiter.api.Test;
 import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
-import java.lang.module.ModuleFinder;
-import java.lang.module.ModuleReference;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assert_;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
@@ -24,6 +20,8 @@ import static org.junit.Assert.fail;
 
 
 class RocktrumpetAnnotationProcessorTest {
+    public static final String ANNOTATIONS_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
+    public static final String ROCKTRUMPET_ANNOTATIONPROCESSOR = "package pink.digitally.rocktrumpet.annotationprocessor;\n";
     private String docsFolderPath = "./target/docs";
     private RocktrumpetAnnotationProcessor underTest;
     private static File jarFile;
@@ -36,7 +34,7 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @BeforeAll
-    public static void allTests(){
+    public static void allTests() {
         jarFile = new File("/Users/ujuezeoke/projects/digitallypink/rocktrumpet/rocktrumpet-annotations/target/rocktrumpet-annotations-1.0-SNAPSHOT.jar");
         System.setProperty("com.google.common.truth.disable_stack_trace_cleaning", "true");
     }
@@ -82,7 +80,7 @@ class RocktrumpetAnnotationProcessorTest {
                 "pink.digitally.rocktrumpet.annotationprocessor.testclass.HelloWorld",
                 "package pink.digitally.rocktrumpet.annotationprocessor.testclass;\n" +
                         "\n" +
-                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        ANNOTATIONS_PAGE_TITLE +
                         "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Just The Title\")\n" +
                         "public class HelloWorld {\n" +
@@ -101,12 +99,12 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void pageTitleWithAllOptions(){
+    public void pageTitleWithAllOptions() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.FooBar",
-                "package pink.digitally.rocktrumpet.annotationprocessor;\n" +
+                ROCKTRUMPET_ANNOTATIONPROCESSOR +
                         "\n" +
-                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        ANNOTATIONS_PAGE_TITLE +
                         "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
                         "\n" +
                         "@PageTitle(value = \"Foo Bar\", documentNumber = \"1\", subHeading = \"A story of foo and bar\",\n" +
@@ -128,13 +126,13 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void methodDescription(){
+    public void methodDescription() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.BartSimpson",
-                "package pink.digitally.rocktrumpet.annotationprocessor;\n" +
+                ROCKTRUMPET_ANNOTATIONPROCESSOR +
                         "\n" +
                         "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
-                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        ANNOTATIONS_PAGE_TITLE +
                         "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Bart Simpson\")\n" +
                         "public class BartSimpson {\n" +
@@ -156,8 +154,48 @@ class RocktrumpetAnnotationProcessorTest {
         assertFileContains("BartSimpson.md",
                 "Bart Simpson",
                 "Bart as we all know enjoys being mischievous.",
-                "public void performMischief()","System.out.println(\"Ay Caramba!\");",
+                "public void performMischief()", "System.out.println(\"Ay Caramba!\");",
                 "The above method demonstrates the act of Bart being mischievous.");
+    }
+
+    @Test
+    public void multipleMethods() {
+        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.Doofenshmirtz",
+                ROCKTRUMPET_ANNOTATIONPROCESSOR +
+                "\n" +
+                "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
+                ANNOTATIONS_PAGE_TITLE +
+                "\n" +
+                "@PageTitle(value = \"I am Dr. Heinz Doofenshmirtz\", documentNumber = \"1\")\n" +
+                "public class Doofenshmirtz {\n" +
+                "    \n" +
+                "    @MethodDescription(pre = \"Below we will demonstrate one of the things that Doof loves to do\")\n" +
+                "    public void trapPerryThePlatypus(){\n" +
+                "        if(aPlatypusIsWearingAHat()){\n" +
+                "            System.out.println(\"You are trapped Perry the Platypus\");\n" +
+                "        } else {\n" +
+                "            System.out.println(\"Where is Perry the Platypus\");\n" +
+                "        }\n" +
+                "    }\n" +
+                "\n" +
+                "    @MethodDescription(pre = \"Only Doofenshmirtz knows how he determines if he has trapped Perry\",\n" +
+                "            post = \"The method above is private.\")\n" +
+                "    private boolean aPlatypusIsWearingAHat() {\n" +
+                "        return true;\n" +
+                "    }\n" +
+                "}");
+        assert_()
+                .about(javaSource())
+                .that(fileObject)
+                .withClasspath(Collections.singleton(jarFile))
+                .processedWith(underTest)
+                .compilesWithoutError();
+        assertFileExists("Doofenshmirtz.md");
+        assertFileContains("Doofenshmirtz.md",
+                "I am Dr. Heinz Doofenshmirtz",
+                "Below we will demonstrate one of the things that Doof loves to do",
+                "public void trapPerryThePlatypus()", "Only Doofenshmirtz knows how he determines if he has trapped Perry",
+                "aPlatypusIsWearingAHat()");
     }
 
     private void assertFileExists(String fileName) {
@@ -165,11 +203,11 @@ class RocktrumpetAnnotationProcessorTest {
         assertTrue(String.format("Expected the file '%s' in classpath.", file.toPath()), file.exists());
     }
 
-    private void assertFileContains(String fileName, String... strings){
+    private void assertFileContains(String fileName, String... strings) {
         File file = new File(docsFolderPath, fileName);
-        String fileBody = null;
-        try {
-            fileBody = Files.lines(file.toPath()).collect(Collectors.joining());
+        String fileBody;
+        try (final Stream<String> lines = Files.lines(file.toPath())) {
+            fileBody = lines.collect(Collectors.joining());
             for (String string : strings) {
                 assertTrue(String.format("Expected a file body containing '%s'", string), fileBody.contains(string));
             }
