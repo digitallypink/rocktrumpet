@@ -31,17 +31,17 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
-        //TODO maybe create a default path.
-        documentDirectory = System.getProperty("docs.path");
-        instance = Trees.instance(processingEnv);
         super.init(processingEnv);
+        documentDirectory = System.getProperty("docs.path", System.getProperty("java.io.tmpdir"));
+        instance = Trees.instance(processingEnv);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<? extends Element> pageTitleElements = roundEnv.getElementsAnnotatedWith(PageTitle.class);
-        Set<? extends Element> methods = roundEnv.getElementsAnnotatedWithAny(Set.of(MethodDescription.class,
-                Heading.class));
+        Set<? extends Element> methods = roundEnv.getElementsAnnotatedWithAny(
+                Set.of(MethodDescription.class,
+                        Heading.class));
         //There can be ONLY one pageTitle per class
         for (Element pageTitleElement : pageTitleElements) {
             Name simpleName = pageTitleElement.getSimpleName();
@@ -52,7 +52,7 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
                     .toString();
             try {
                 File file = new File(documentDirectory);
-                if(!file.exists()){
+                if (!file.exists()) {
                     //TODO log the success or the failure of this.
                     file.mkdirs();
                 }
