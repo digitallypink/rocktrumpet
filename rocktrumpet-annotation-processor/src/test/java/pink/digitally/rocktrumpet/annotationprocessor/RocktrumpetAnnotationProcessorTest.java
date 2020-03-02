@@ -3,14 +3,13 @@ package pink.digitally.rocktrumpet.annotationprocessor;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,59 +18,54 @@ import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
+@DisplayName("Rocktrumpet Annotation Processor should: ")
 class RocktrumpetAnnotationProcessorTest {
-    private static final String JAR_BASE_NAME = "rocktrumpet-annotations";
-    private static final String ANNOTATIONS_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
-    private static final String ROCKTRUMPET_ANNOTATIONPROCESSOR = "package pink.digitally.rocktrumpet.annotationprocessor;\n";
+    private static final String IMPORT_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
+    private static final String PACKAGE_DECLARATION = "package pink.digitally.rocktrumpet.annotationprocessor;\n";
+    public static final String IMPORT_METHOD_DESCRIPTION = "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n";
     private String docsFolderPath = "./target/docs";
     private RocktrumpetAnnotationProcessor underTest;
-    private static Set<File> jarFile;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         underTest = new RocktrumpetAnnotationProcessor();
 
         System.setProperty("docs.path", docsFolderPath);
     }
 
     @BeforeAll
-    public static void allTests() {
-        final File[] files = new File("../rocktrumpet-annotations/target").listFiles((dir, name) -> name.contains(JAR_BASE_NAME) && name.endsWith(".jar"));
-        if (files == null || files.length == 0) {
-            throw new AssertionError("rocktrumpet-annotations Jar has not been built");
-        }
-        jarFile = Collections.singleton(files[0]);
+    static void allTests() {
         System.setProperty("com.google.common.truth.disable_stack_trace_cleaning", "true");
     }
 
     @Test
-    public void pageTitleIsATypeAnnotation() {
+    @DisplayName("process annotation only when PageTitle annotation is at class level")
+    void pageTitleIsATypeAnnotation() {
         JavaFileObject fileObject = JavaFileObjects.forSourceLines("pink.digitally.annotationprocessor.testclass.WrongLocation",
                 "package pink.digitally.annotationprocessor.testclass;",
                 "import pink.digitally.rocktrumpet.annotations.PageTitle;",
-                "public class WrongLocation{",
+                "class WrongLocation{",
                 "@PageTitle(documentNumber = \"1\", value = \"Just The Title\")",
-                "public void aMethod(){}",
+                "void aMethod(){}",
                 "}");
 
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .failsToCompile();
     }
 
     @Test
-    public void onlyOnePageTitle() {
+    @DisplayName("process annotation only when PageTitle ONE annotation per class")
+    void onlyOnePageTitle() {
         JavaFileObject fileObject = JavaFileObjects.forSourceLines("pink.digitally.annotationprocessor.testclass.WrongLocation",
                 "package pink.digitally.annotationprocessor.testclass;",
                 "import pink.digitally.rocktrumpet.annotations.PageTitle;",
-                "public class WrongLocation{",
+                "class WrongLocation{",
                 "@PageTitle(documentNumber = \"1\", value = \"Just The Title\")",
                 "@PageTitle(documentNumber = \"2\", value = \"Something else\")",
-                "public void aMethod(){}",
+                "void aMethod(){}",
                 "}");
 
         assert_()
@@ -82,21 +76,21 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void canPrintTitlePage() {
+    @DisplayName("print a markdown file that contains the value of the @PageTitle")
+    void canPrintTitlePage() {
         JavaFileObject fileObject = JavaFileObjects.forSourceLines(
                 "pink.digitally.rocktrumpet.annotationprocessor.testclass.HelloWorld",
                 "package pink.digitally.rocktrumpet.annotationprocessor.testclass;\n" +
                         "\n" +
-                        ANNOTATIONS_PAGE_TITLE +
+                        IMPORT_PAGE_TITLE +
                         "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Just The Title\")\n" +
-                        "public class HelloWorld {\n" +
+                        "class HelloWorld {\n" +
                         "}");
 
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -105,23 +99,23 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void pageTitleWithAllOptions() {
+    @DisplayName("print all the elements of the @PageTitle annotation")
+    void pageTitleWithAllOptions() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.FooBar",
-                ROCKTRUMPET_ANNOTATIONPROCESSOR +
+                PACKAGE_DECLARATION +
                         "\n" +
-                        ANNOTATIONS_PAGE_TITLE +
+                        IMPORT_PAGE_TITLE +
                         "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
                         "\n" +
                         "@PageTitle(value = \"Foo Bar\", documentNumber = \"1\", subHeading = \"A story of foo and bar\",\n" +
                         "summary = @Summary(\"One fine day in the month of May, Foo met Bar at a Bar and interesting things began to unfold.\"))\n" +
-                        "public class FooBar {\n" +
+                        "class FooBar {\n" +
                         "}");
 
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -133,20 +127,21 @@ class RocktrumpetAnnotationProcessorTest {
     }
 
     @Test
-    public void methodDescription() {
+    @DisplayName("print details of method description when @MethodDescription")
+    void methodDescription() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.BartSimpson",
-                ROCKTRUMPET_ANNOTATIONPROCESSOR +
+                PACKAGE_DECLARATION +
                         "\n" +
-                        "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
-                        ANNOTATIONS_PAGE_TITLE +
+                        IMPORT_METHOD_DESCRIPTION +
+                        IMPORT_PAGE_TITLE +
                         "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Bart Simpson\")\n" +
-                        "public class BartSimpson {\n" +
+                        "class BartSimpson {\n" +
                         "\n" +
                         "    @MethodDescription(pre = \"Bart as we all know enjoys being mischievous.\",\n" +
                         "    post = \"The above method demonstrates the act of Bart being mischievous.\")\n" +
-                        "    public void performMischief(){\n" +
+                        "    void performMischief(){\n" +
                         "        System.out.println(\"Ay Caramba!\");\n" +
                         "    }\n" +
                         "}");
@@ -154,30 +149,30 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("BartSimpson.md");
         assertFileContains("BartSimpson.md",
                 "Bart Simpson",
                 "Bart as we all know enjoys being mischievous.",
-                "public void performMischief()", "System.out.println(\"Ay Caramba!\");",
+                "void performMischief()", "System.out.println(\"Ay Caramba!\");",
                 "The above method demonstrates the act of Bart being mischievous.");
     }
 
     @Test
-    public void multipleMethods() {
+    @DisplayName("print details of all method descriptions")
+    void multipleMethods() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.Doofenshmirtz",
-                ROCKTRUMPET_ANNOTATIONPROCESSOR +
+                PACKAGE_DECLARATION +
                         "\n" +
-                        "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
-                        ANNOTATIONS_PAGE_TITLE +
+                        IMPORT_METHOD_DESCRIPTION +
+                        IMPORT_PAGE_TITLE +
                         "\n" +
                         "@PageTitle(value = \"I am Dr. Heinz Doofenshmirtz\", documentNumber = \"1\")\n" +
-                        "public class Doofenshmirtz {\n" +
+                        "class Doofenshmirtz {\n" +
                         "    \n" +
                         "    @MethodDescription(pre = \"Below we will demonstrate one of the things that Doof loves to do\")\n" +
-                        "    public void trapPerryThePlatypus(){\n" +
+                        "    void trapPerryThePlatypus(){\n" +
                         "        if(aPlatypusIsWearingAHat()){\n" +
                         "            System.out.println(\"You are trapped Perry the Platypus\");\n" +
                         "        } else {\n" +
@@ -194,37 +189,37 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("Doofenshmirtz.md");
         assertFileContains("Doofenshmirtz.md",
                 "I am Dr. Heinz Doofenshmirtz",
                 "Below we will demonstrate one of the things that Doof loves to do",
-                "public void trapPerryThePlatypus()", "Only Doofenshmirtz knows how he determines if he has trapped Perry",
+                "void trapPerryThePlatypus()", "Only Doofenshmirtz knows how he determines if he has trapped Perry",
                 "aPlatypusIsWearingAHat()");
     }
 
     @Test
-    public void multipleMethodsMultipleHeaders() {
-        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", ROCKTRUMPET_ANNOTATIONPROCESSOR +
+    @DisplayName("print multiple headers and message bodies")
+    void multipleMethodsMultipleHeaders() {
+        JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", PACKAGE_DECLARATION +
                 "\n" +
                 "import pink.digitally.rocktrumpet.annotations.Heading;\n" +
-                "import pink.digitally.rocktrumpet.annotations.MethodDescription;\n" +
-                ANNOTATIONS_PAGE_TITLE +
+                IMPORT_METHOD_DESCRIPTION +
+                IMPORT_PAGE_TITLE +
                 "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
                 "import pink.digitally.rocktrumpet.annotations.types.HeadingLevel;\n" +
                 "\n" +
                 "@PageTitle(value = \"Programing Conditional Concepts\", documentNumber = \"1\",\n" +
                 "        summary = @Summary(\"The document is going to focus on conditional behaviour\"))\n" +
-                "public class ProgramingConditionalConcepts {\n" +
+                "class ProgramingConditionalConcepts {\n" +
                 "\n" +
                 "    @Heading(level = HeadingLevel.H2, value = \"If Statement\")\n" +
                 "    @MethodDescription(pre = \"A standard if statement would perform an additional task ONLY when the condition in the if\" +\n" +
                 "            \" block has been satisfied.\",\n" +
                 "            post = \"When the above has been run, \\\"Do something that is unique to number five\\\" \" +\n" +
                 "                    \"will be printed ONLY when the number passed is 5\")\n" +
-                "    public void ifStatement(int number) {\n" +
+                "    void ifStatement(int number) {\n" +
                 "        if (5 == number) {\n" +
                 "            System.out.println(\"Do something that is unique to number five\");\n" +
                 "        }\n" +
@@ -235,7 +230,7 @@ class RocktrumpetAnnotationProcessorTest {
                 "            post = \"In the example above, 'number % 5 == 0' is given the highest priority. \" +\n" +
                 "                    \"For example if the number is 10 the result will include \\\"Divisible by 5\\\" and not \" +\n" +
                 "                    \"\\\"Divisible by 2 and not divisible by 5\\\"\")\n" +
-                "    public void ifElseStatements(int number) {\n" +
+                "    void ifElseStatements(int number) {\n" +
                 "        if (number % 5 == 0) {\n" +
                 "            System.out.println(\"Divisible by 5\");\n" +
                 "        } else if (number % 2 == 0) {\n" +
@@ -247,7 +242,7 @@ class RocktrumpetAnnotationProcessorTest {
                 "    @Heading(level = HeadingLevel.H2, value = \"Switch Statements\")\n" +
                 "    @MethodDescription(pre = \"This CAN be considered as a replacement for if-else-if statements.\",\n" +
                 "    post = \"***Disclaimer use this technique with caution.\")\n" +
-                "    public void switchStatement(int number){\n" +
+                "    void switchStatement(int number){\n" +
                 "        switch (number){\n" +
                 "            case 5: {\n" +
                 "                System.out.println(\"Number is 5\");\n" +
@@ -266,14 +261,13 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
-                .withClasspath(jarFile)
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("ProgramingConditionalConcepts.md");
         assertFileContains("ProgramingConditionalConcepts.md",
                 "The document is going to focus on conditional behaviour",
                 "## If Statement",
-                "A standard if statement would perform an additional task ONLY", "public void ifStatement(int number)",
+                "A standard if statement would perform an additional task ONLY", "void ifStatement(int number)",
                 "## Switch Statements");
     }
 
