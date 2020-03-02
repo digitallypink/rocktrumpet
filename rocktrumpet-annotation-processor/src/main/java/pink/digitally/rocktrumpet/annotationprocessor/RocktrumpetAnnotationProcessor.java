@@ -1,24 +1,20 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
-//import com.google.auto.service.AutoService;
-
 import com.google.auto.service.AutoService;
 import com.sun.source.util.Trees;
-import pink.digitally.rocktrumpet.annotationprocessor.builders.CombinedBuilder;
-import pink.digitally.rocktrumpet.annotations.Heading;
-import pink.digitally.rocktrumpet.annotations.MethodDescription;
+import pink.digitally.rocktrumpet.annotationprocessor.builders.MarkdownFileBuilder;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.DocumentDetails;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.PageTitleHandler;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.TableOfContentsBuilder;
 import pink.digitally.rocktrumpet.annotations.PageTitle;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @SupportedAnnotationTypes(
         "pink.digitally.rocktrumpet.annotations.*")
@@ -38,31 +34,19 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
         Set<? extends Element> pageTitleElements = roundEnv.getElementsAnnotatedWith(PageTitle.class);
-        Set<? extends Element> methods = roundEnv.getElementsAnnotatedWithAny(
-                Set.of(MethodDescription.class,
-                        Heading.class));
-        //There can be ONLY one pageTitle per class
-        for (Element pageTitleElement : pageTitleElements) {
-            Name simpleName = pageTitleElement.getSimpleName();
-            PageTitle annotation = pageTitleElement.getAnnotation(PageTitle.class);
-            //TODO Move the writhing to another class.
-            final String fileContents = CombinedBuilder.withPageTitle(annotation, instance)
-                    .withMethodDescription(methods)
-                    .toString();
-            try {
-                File file = new File(documentDirectory);
-                if (!file.exists()) {
-                    //TODO log the success or the failure of this.
-                    file.mkdirs();
-                }
-                Files.write(new File(documentDirectory, simpleName.toString() + ".md").toPath(),
-                        fileContents.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        final List<DocumentDetails> documentDetails = pageTitleElements.stream()
+                .map(element -> new PageTitleHandler(element, instance).pageTitleAndContents())
+                .collect(Collectors.toList());
+
+        final DocumentDetails contents = new TableOfContentsBuilder(documentDetails, new MarkdownFileBuilder()).contents();
+
+        documentDetails.forEach(documentDetail -> FileWriterHelper.writeFiles(documentDirectory, documentDetail));
+        if (documentDetails.size() > 1) {
+            FileWriterHelper.writeFiles(documentDirectory, contents);
         }
 
-        return true;
+        return false;
     }
 }

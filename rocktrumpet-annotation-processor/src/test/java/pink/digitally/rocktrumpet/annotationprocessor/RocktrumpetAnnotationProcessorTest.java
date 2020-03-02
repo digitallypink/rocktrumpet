@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assert_;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -269,6 +271,45 @@ class RocktrumpetAnnotationProcessorTest {
                 "## If Statement",
                 "A standard if statement would perform an additional task ONLY", "void ifStatement(int number)",
                 "## Switch Statements");
+    }
+
+    @Test
+    @DisplayName("print multiple classes and a table of contents")
+    void canHandleClasses() {
+        final JavaFileObject firstDocument = JavaFileObjects
+                .forSourceString("pink.digitally.rocktrumpet.annotationprocessor.TheFirstDocument",
+                        PACKAGE_DECLARATION +
+                                "\n" +
+                                IMPORT_PAGE_TITLE +
+                                "\n" +
+                                IMPORT_METHOD_DESCRIPTION +
+                                "\n" +
+                                "@PageTitle(value = \"This is the first document\", documentNumber = \"1\")\n" +
+                                "public class TheFirstDocument {\n" +
+                                "@MethodDescription(pre = \"Bart as we all know enjoys being mischievous.\")\n" +
+                                "public void helloWorld(){}" +
+                                "}");
+        final JavaFileObject secondDocument = JavaFileObjects
+                .forSourceString("pink.digitally.rocktrumpet.annotationprocessor.TheSecondDocument",
+                        PACKAGE_DECLARATION +
+                                "\n" +
+                                IMPORT_PAGE_TITLE +
+                                "\n" +
+                                "@PageTitle(value = \"This is the second document\", documentNumber = \"2\")\n" +
+                                "public class TheSecondDocument {\n" +
+                                "}");
+
+        assert_()
+                .about(javaSources())
+                .that(asList(firstDocument, secondDocument))
+                .processedWith(underTest)
+                .compilesWithoutError();
+
+        assertFileExists("TheFirstDocument.md");
+        assertFileExists("TheSecondDocument.md");
+        assertFileExists("TableOfContents.md");
+        assertFileContains("TableOfContents.md",
+                        "TheSecondDocument", "TheFirstDocument");
     }
 
     private void assertFileExists(String fileName) {
