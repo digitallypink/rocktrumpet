@@ -83,9 +83,7 @@ class RocktrumpetAnnotationProcessorTest {
         JavaFileObject fileObject = JavaFileObjects.forSourceLines(
                 "pink.digitally.rocktrumpet.annotationprocessor.testclass.HelloWorld",
                 "package pink.digitally.rocktrumpet.annotationprocessor.testclass;\n" +
-                        "\n" +
                         IMPORT_PAGE_TITLE +
-                        "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Just The Title\")\n" +
                         "class HelloWorld {\n" +
                         "}");
@@ -106,10 +104,8 @@ class RocktrumpetAnnotationProcessorTest {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.FooBar",
                 PACKAGE_DECLARATION +
-                        "\n" +
                         IMPORT_PAGE_TITLE +
                         "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
-                        "\n" +
                         "@PageTitle(value = \"Foo Bar\", documentNumber = \"1\", subHeading = \"A story of foo and bar\",\n" +
                         "summary = @Summary(\"One fine day in the month of May, Foo met Bar at a Bar and interesting things began to unfold.\"))\n" +
                         "class FooBar {\n" +
@@ -134,10 +130,8 @@ class RocktrumpetAnnotationProcessorTest {
         JavaFileObject fileObject = JavaFileObjects.forSourceString(
                 "pink.digitally.rocktrumpet.annotationprocessor.BartSimpson",
                 PACKAGE_DECLARATION +
-                        "\n" +
                         IMPORT_METHOD_DESCRIPTION +
                         IMPORT_PAGE_TITLE +
-                        "\n" +
                         "@PageTitle(documentNumber = \"1\", value = \"Bart Simpson\")\n" +
                         "class BartSimpson {\n" +
                         "\n" +
@@ -166,10 +160,8 @@ class RocktrumpetAnnotationProcessorTest {
     void multipleMethods() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.Doofenshmirtz",
                 PACKAGE_DECLARATION +
-                        "\n" +
                         IMPORT_METHOD_DESCRIPTION +
                         IMPORT_PAGE_TITLE +
-                        "\n" +
                         "@PageTitle(value = \"I am Dr. Heinz Doofenshmirtz\", documentNumber = \"1\")\n" +
                         "class Doofenshmirtz {\n" +
                         "    \n" +
@@ -205,13 +197,11 @@ class RocktrumpetAnnotationProcessorTest {
     @DisplayName("print multiple headers and message bodies")
     void multipleMethodsMultipleHeaders() {
         JavaFileObject fileObject = JavaFileObjects.forSourceString("pink.digitally.rocktrumpet.annotationprocessor.ProgramingConditionalConcepts", PACKAGE_DECLARATION +
-                "\n" +
                 "import pink.digitally.rocktrumpet.annotations.Heading;\n" +
                 IMPORT_METHOD_DESCRIPTION +
                 IMPORT_PAGE_TITLE +
                 "import pink.digitally.rocktrumpet.annotations.Summary;\n" +
                 "import pink.digitally.rocktrumpet.annotations.types.HeadingLevel;\n" +
-                "\n" +
                 "@PageTitle(value = \"Programing Conditional Concepts\", documentNumber = \"1\",\n" +
                 "        summary = @Summary(\"The document is going to focus on conditional behaviour\"))\n" +
                 "class ProgramingConditionalConcepts {\n" +
@@ -279,11 +269,8 @@ class RocktrumpetAnnotationProcessorTest {
         final JavaFileObject firstDocument = JavaFileObjects
                 .forSourceString("pink.digitally.rocktrumpet.annotationprocessor.TheFirstDocument",
                         PACKAGE_DECLARATION +
-                                "\n" +
                                 IMPORT_PAGE_TITLE +
-                                "\n" +
                                 IMPORT_METHOD_DESCRIPTION +
-                                "\n" +
                                 "@PageTitle(value = \"This is the first document\", documentNumber = \"1\")\n" +
                                 "public class TheFirstDocument {\n" +
                                 "@MethodDescription(pre = \"Bart as we all know enjoys being mischievous.\")\n" +
@@ -292,9 +279,7 @@ class RocktrumpetAnnotationProcessorTest {
         final JavaFileObject secondDocument = JavaFileObjects
                 .forSourceString("pink.digitally.rocktrumpet.annotationprocessor.TheSecondDocument",
                         PACKAGE_DECLARATION +
-                                "\n" +
                                 IMPORT_PAGE_TITLE +
-                                "\n" +
                                 "@PageTitle(value = \"This is the second document\", documentNumber = \"2\")\n" +
                                 "public class TheSecondDocument {\n" +
                                 "}");
