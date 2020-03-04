@@ -1,6 +1,5 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
-import com.google.auto.service.AutoService;
 import com.sun.source.util.Trees;
 import pink.digitally.rocktrumpet.annotationprocessor.builders.MarkdownFileBuilder;
 import pink.digitally.rocktrumpet.annotationprocessor.handlers.DocumentDetails;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 @SupportedAnnotationTypes(
         "pink.digitally.rocktrumpet.annotations.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@AutoService(Processor.class)
 public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
 
     private String documentDirectory;
@@ -28,7 +26,11 @@ public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        System.out.println("Initialized!!!!");
+
         documentDirectory = System.getProperty("docs.path", System.getProperty("java.io.tmpdir"));
+        System.out.println("processingEnv = " + processingEnv);
+        System.out.println("documentDirectory = " + documentDirectory);
         instance = Trees.instance(processingEnv);
     }
 

@@ -5,7 +5,7 @@ import pink.digitally.rocktrumpet.annotations.types.HeadingLevel;
 public enum MarkdownElements {
     BOLD("**","**"),
     ITALIC("*", "*"),
-    BLOCKQUOTES(">", "\n"),
+    BLOCKQUOTES("> ", "\n"),
     UNORDERED_LIST("* ", "\n"),
     JAVA_CODE_BLOCKS("\n```java\n", "\n```\n"),
     HORIZONAL_LINE_RULE("\n---\n", ""),
