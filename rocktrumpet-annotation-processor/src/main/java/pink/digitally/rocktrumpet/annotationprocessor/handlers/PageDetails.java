@@ -1,19 +1,29 @@
 package pink.digitally.rocktrumpet.annotationprocessor.handlers;
 
-public class DocumentDetails implements Comparable<DocumentDetails> {
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jetbrains.annotations.NotNull;
+
+public class PageDetails implements Comparable<PageDetails> {
     private final CharSequence documentName;
     private final CharSequence fileName;
     private final CharSequence fileContents;
     private final String documentNumber;
+    private final String title;
 
-    public DocumentDetails(String documentNumber,
-                           CharSequence documentName,
-                           CharSequence fileName,
-                           CharSequence fileContents) {
+    public PageDetails(String documentNumber,
+                       CharSequence documentName,
+                       CharSequence fileName,
+                       CharSequence fileContents, String title) {
         this.documentNumber = documentNumber;
         this.documentName = documentName;
         this.fileName = fileName;
         this.fileContents = fileContents;
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public CharSequence getDocumentName() {
@@ -33,8 +43,19 @@ public class DocumentDetails implements Comparable<DocumentDetails> {
     }
 
     @Override
-    public int compareTo(DocumentDetails o) {
+    public int compareTo(@NotNull PageDetails o) {
         return this.documentNumber != null && o.documentNumber != null ?
                 this.documentNumber.compareTo(o.documentNumber) : -1;
+    }
+
+    @SuppressWarnings("all")
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

@@ -1,13 +1,17 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
 import com.sun.source.util.Trees;
-import pink.digitally.rocktrumpet.annotationprocessor.builders.MarkdownFileBuilder;
-import pink.digitally.rocktrumpet.annotationprocessor.handlers.DocumentDetails;
-import pink.digitally.rocktrumpet.annotationprocessor.handlers.PageTitleHandler;
-import pink.digitally.rocktrumpet.annotationprocessor.handlers.TableOfContentsBuilder;
+import pink.digitally.rocktrumpet.annotationprocessor.config.RocktrumpetProperties;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.ClassPage;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.PageDetails;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.TableOfContentsPage;
 import pink.digitally.rocktrumpet.annotations.PageTitle;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -20,33 +24,32 @@ import java.util.stream.Collectors;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class RocktrumpetAnnotationProcessor extends AbstractProcessor {
 
-    private String documentDirectory;
     private Trees instance;
+    private RocktrumpetProperties rocktrumpetProperties;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        System.out.println("Initialized!!!!");
-
-        documentDirectory = System.getProperty("docs.path", System.getProperty("java.io.tmpdir"));
-        System.out.println("processingEnv = " + processingEnv);
-        System.out.println("documentDirectory = " + documentDirectory);
         instance = Trees.instance(processingEnv);
+        rocktrumpetProperties = new RocktrumpetProperties();
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
         Set<? extends Element> pageTitleElements = roundEnv.getElementsAnnotatedWith(PageTitle.class);
-        final List<DocumentDetails> documentDetails = pageTitleElements.stream()
-                .map(element -> new PageTitleHandler(element, instance).pageTitleAndContents())
+        final List<PageDetails> pageDetails = pageTitleElements.stream()
+                .map(element -> new ClassPage(element, instance, rocktrumpetProperties.getFileContentBuilder()).getPageDetails())
                 .collect(Collectors.toList());
+        final String documentPath = rocktrumpetProperties.getDocumentPath();
 
-        final DocumentDetails contents = new TableOfContentsBuilder(documentDetails, new MarkdownFileBuilder()).contents();
 
-        documentDetails.forEach(documentDetail -> FileWriterHelper.writeFiles(documentDirectory, documentDetail));
-        if (documentDetails.size() > 1) {
-            FileWriterHelper.writeFiles(documentDirectory, contents);
+        pageDetails.forEach(documentDetail -> FileWriterHelper.writeFiles(documentPath, documentDetail));
+
+        if (!pageDetails.isEmpty() && rocktrumpetProperties.createTableOfContents()) {
+            final PageDetails contents = new TableOfContentsPage(pageDetails,
+                    rocktrumpetProperties, rocktrumpetProperties.getFileContentBuilder())
+                    .getPageDetails();
+            FileWriterHelper.writeFiles(documentPath, contents);
         }
 
         return false;

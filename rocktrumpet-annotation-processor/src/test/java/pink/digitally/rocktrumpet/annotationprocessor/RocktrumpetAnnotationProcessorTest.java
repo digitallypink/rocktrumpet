@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+
 @DisplayName("Rocktrumpet Annotation Processor should: ")
 class RocktrumpetAnnotationProcessorTest {
     private static final String IMPORT_PAGE_TITLE = "import pink.digitally.rocktrumpet.annotations.PageTitle;\n";
@@ -54,6 +55,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .failsToCompile();
     }
@@ -73,6 +75,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .failsToCompile();
     }
@@ -91,12 +94,14 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
 
         assertFileExists("HelloWorld.md");
         assertFileContains("HelloWorld.md", "Just The Title");
     }
+
 
     @Test
     @DisplayName("print all the elements of the @PageTitle annotation")
@@ -114,6 +119,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -145,6 +151,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("BartSimpson.md");
@@ -153,6 +160,30 @@ class RocktrumpetAnnotationProcessorTest {
                 "Bart as we all know enjoys being mischievous.",
                 "void performMischief()", "System.out.println(\"Ay Caramba!\");",
                 "The above method demonstrates the act of Bart being mischievous.");
+    }
+
+    @Test
+    @DisplayName("print details of method description when @ClassDescription")
+    void classDescription() {
+        JavaFileObject fileObject = JavaFileObjects.forSourceString(
+                "pink.digitally.rocktrumpet.annotationprocessor.Hello",
+                "package pink.digitally.rocktrumpet.annotationprocessor;\n" +
+                        "import pink.digitally.rocktrumpet.annotations.ClassDescription;\n" +
+                        "import pink.digitally.rocktrumpet.annotations.PageTitle;\n" +
+                        "@PageTitle(value = \"Hello\", documentNumber = \"1\")\n" +
+                        "@ClassDescription(pre = \"Something About Hello\")\n" +
+                        "public class Hello {}");
+
+        assert_()
+                .about(javaSource())
+                .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
+                .processedWith(underTest)
+                .compilesWithoutError();
+        assertFileExists("Hello.md");
+        assertFileContains("Hello.md",
+                "Something About Hello",
+                "public class Hello");
     }
 
     @Test
@@ -183,6 +214,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("Doofenshmirtz.md");
@@ -253,6 +285,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSource())
                 .that(fileObject)
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
         assertFileExists("ProgramingConditionalConcepts.md");
@@ -287,6 +320,7 @@ class RocktrumpetAnnotationProcessorTest {
         assert_()
                 .about(javaSources())
                 .that(asList(firstDocument, secondDocument))
+                .withCompilerOptions("-classpath", "target/classes")
                 .processedWith(underTest)
                 .compilesWithoutError();
 
@@ -308,10 +342,12 @@ class RocktrumpetAnnotationProcessorTest {
         try (final Stream<String> lines = Files.lines(file.toPath())) {
             fileBody = lines.collect(Collectors.joining());
             for (String string : strings) {
-                assertTrue(String.format("Expected a file body containing '%s'", string), fileBody.contains(string));
+                assertTrue(String.format("Expected the file '%s', to contain body '%s'", file, string), fileBody.contains(string));
             }
         } catch (IOException e) {
             fail(String.format("%s is missing.", file.toPath()));
         }
     }
+    @interface PageTitle {}
+    @interface B {}
 }

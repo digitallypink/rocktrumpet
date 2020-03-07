@@ -17,23 +17,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>pink.digitally.rocktrumpet</groupId>
-            <artifactId>rocktrumpet-annotations</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-        <dependency>
             <!-- Used only by GeneratedAnnotationSpecs.
                  If you use JavaPoet, you can use GeneratedAnnotationSpecs. -->
             <groupId>com.squareup</groupId>
             <artifactId>javapoet</artifactId>
             <version>1.12.1</version>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>${auto-service.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -43,6 +32,12 @@
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -56,10 +51,6 @@
                         <id>default-compile</id>
                         <configuration>
                             <compilerArgument>-proc:none</compilerArgument>
-<!--                            <includes>-->
-<!--                                <include>pink.digitally.rocktrumpet.annotationprocessor.RocktrumpetAnnotationProcessor-->
-<!--                                </include>-->
-<!--                            </includes>-->
                         </configuration>
                     </execution>
                     <execution>

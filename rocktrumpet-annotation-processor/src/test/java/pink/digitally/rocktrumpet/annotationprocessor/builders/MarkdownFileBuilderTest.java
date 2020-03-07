@@ -32,7 +32,7 @@ class MarkdownFileBuilderTest {
     void blockquotes(){
         final String sampleBody = "Something good";
         String result = underTest
-                .blockquotes(sampleBody)
+                .blockquote(sampleBody)
                 .build();
         assertEquals(String.format("> %s%n", sampleBody), result);
     }

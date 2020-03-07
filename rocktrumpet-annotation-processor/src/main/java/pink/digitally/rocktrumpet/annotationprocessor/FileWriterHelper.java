@@ -1,6 +1,6 @@
 package pink.digitally.rocktrumpet.annotationprocessor;
 
-import pink.digitally.rocktrumpet.annotationprocessor.handlers.DocumentDetails;
+import pink.digitally.rocktrumpet.annotationprocessor.handlers.PageDetails;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,7 @@ public class FileWriterHelper {
     private FileWriterHelper() {
     }
 
-    public static void writeFiles(String documentDirectory, DocumentDetails documentDetail) {
+    public static void writeFiles(String documentDirectory, PageDetails documentDetail) {
         try {
             File file = new File(documentDirectory);
             if (!file.exists()) {
