@@ -11,7 +11,7 @@ import static pink.digitally.rocktrumpet.annotationprocessor.markupelements.Mark
 import static pink.digitally.rocktrumpet.annotationprocessor.markupelements.MarkdownElements.UNORDERED_LIST;
 
 public class MarkdownFileBuilder implements FileContentBuilder {
-    public static final String NEW_LINE = "\n";
+    private static final String NEW_LINE = "\n";
     private final StringBuilder stringBuilder;
 
     public MarkdownFileBuilder() {
@@ -88,10 +88,6 @@ public class MarkdownFileBuilder implements FileContentBuilder {
         return stringBuilder.toString();
     }
 
-    public MarkdownFileBuilder headingTwo(String value) {
-        return heading(HeadingLevel.H2, value);
-    }
-
     @Override
     public MarkdownFileBuilder heading(HeadingLevel headingLevel, String value) {
         stringBuilder.append(headingLevel.markdown())
@@ -103,14 +99,6 @@ public class MarkdownFileBuilder implements FileContentBuilder {
     @Override
     public FileContentBuilder anchor(String label, String link) {
         stringBuilder.append(anchorFrom(label, link));
-        return this;
-    }
-
-    public MarkdownFileBuilder orderedList(CharSequence documentNumber, String value) {
-        stringBuilder.append(documentNumber)
-                .append(". ")
-                .append(value)
-                .append(NEW_LINE);
         return this;
     }
 

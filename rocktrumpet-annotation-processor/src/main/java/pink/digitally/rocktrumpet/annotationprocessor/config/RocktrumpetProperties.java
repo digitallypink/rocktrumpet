@@ -1,5 +1,7 @@
 package pink.digitally.rocktrumpet.annotationprocessor.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pink.digitally.rocktrumpet.annotationprocessor.builders.FileContentBuilder;
 import pink.digitally.rocktrumpet.annotationprocessor.builders.MarkdownFileBuilder;
 
@@ -9,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class RocktrumpetProperties {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger("rocktrumpet");
     private static final String DOCS_PATH_KEY = "docs.path";
     private final Properties properties;
 
@@ -26,11 +28,10 @@ public class RocktrumpetProperties {
             if (resourceAsStream != null) {
                 properties
                         .load(resourceAsStream);
-                System.out.println("Properties loaded");
+                LOGGER.info("Properties loaded");
             }
         } catch (IOException e) {
-            //This is wrong
-            e.printStackTrace();
+            LOGGER.error("Failed to read properties", e);
         }
     }
 

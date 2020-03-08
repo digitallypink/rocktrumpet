@@ -7,6 +7,7 @@ module rocktrumpet.annotation.processor {
     requires org.apache.commons.lang3;
     requires com.squareup.javapoet;
     requires org.jetbrains.annotations;
+    requires org.slf4j;
 
     exports pink.digitally.rocktrumpet.annotationprocessor;
     exports pink.digitally.rocktrumpet.annotations;
