@@ -20,5 +20,5 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.11
-    - name: Build with Maven
+    - name: Clean and Install with Maven
       run: mvn clean install --file pom.xml
