@@ -26,8 +26,8 @@ jobs:
       run:  mvn --batch-mode release:prepare
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        USER_NAME: ${{ user.name }}
-        USER_EMAIL: ${{ user.email }}
+        USER_NAME: ${{ github.user }}
+        USER_EMAIL: ${{ github.email }}
 
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
