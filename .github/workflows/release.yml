@@ -1,6 +1,6 @@
-name: Deploy on Tag
+name: Release
 on:
-  tag:
+  release:
     branches: [ master ]
 
 jobs:
