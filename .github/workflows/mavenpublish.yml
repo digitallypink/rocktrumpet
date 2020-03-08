@@ -22,7 +22,21 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
+    - name: Release Prepare
+      run:  mvn --batch-mode release:prepare
+
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Update Versions
+      run: mvn --batch-mode release:update-versions
+
+    - name: Commit
+      run: git commit -m "Updated Versions"
+
+    - name: Push Updated Version
+      run: git push origin master
       env:
         GITHUB_TOKEN: ${{ github.token }}

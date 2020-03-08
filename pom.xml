@@ -5,7 +5,7 @@
     <artifactId>rocktrumpet</artifactId>
     <packaging>pom</packaging>
     <groupId>pink.digitally.rocktrumpet</groupId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <modules>
         <module>rocktrumpet-annotation-processor</module>
     </modules>
@@ -159,5 +159,6 @@
     </distributionManagement>
     <scm>
         <connection>scm:git:git@github.com:digitallypink/rocktrumpet.git</connection>
-    </scm>
+      <tag>rocktrumpet-1.1</tag>
+  </scm>
 </project>
